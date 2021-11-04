@@ -1083,9 +1083,9 @@ void() W_Attack =
 		
 		
 		if(self.hooking == 1)
-		BreakHook ();
+			BreakHook ();
 		else
-		FireHook ();
+			FireHook ();
 		//r = random();
 		//if (r < 0.25)
 		//	FireHook ();

@@ -75,64 +75,66 @@ void() pull =
 {
 		if (self.owner.hooking == 1)
 		{
-		self.owner.velocity = normalize(self.origin - self.owner.origin);
-		self.owner.velocity = self.owner.velocity * 500;
-		self.think = pull;
-		self.nextthink = time + 0.1;
+			self.owner.velocity = normalize(self.origin - self.owner.origin);
+			self.owner.velocity = self.owner.velocity * 500;
+			self.think = pull;
+			self.nextthink = time + 0.1;
 		}
 		else
 		{
-		self.owner.hooking = 0;
-		remove(self);
-		sound (self.owner, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
+			self.owner.hooking = 0;
+			remove(self);
+			sound (self.owner, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
 		}	
 };
 
 void() hookdamage =
 {
-if (self.enemy.health)
-{
-	self.owner.velocity = normalize(self.origin - self.owner.origin);
-	self.owner.velocity = self.owner.velocity * 500;
-	
-	T_Damage(self.enemy, self, self.owner, 2);
+	if (self.enemy.health > 0)
+	{
+		self.owner.velocity = normalize(self.origin - self.owner.origin);
+		self.owner.velocity = self.owner.velocity * 500;
+		
+		T_Damage(self.enemy, self, self.owner, 2);
 
-	self.origin = self.enemy.origin;
-	self.think = hookdamage;
-	self.nextthink = time + 0.1;
-}
-else
-{
-	self.owner.hooking = 0;
-	remove(self);
-	sound (self.owner, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);	
-}
+		self.origin = self.enemy.origin;
+		self.think = hookdamage;
+		self.nextthink = time + 0.1;
+	}
+	else
+	{
+		self.owner.hooking = 0;
+		remove(self);
+		sound (self.owner, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);	
+	}
 };
 
 void() BreakHook =
 {
 	if (self.hooking == 1)
 	{
-	remove(self.hook);
-	self.hooking = 0;
-	sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);	
+		remove(self.hook);
+		self.hooking = 0;
+		sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);	
 	}
 };
 
 
 void() PullHook =
 {
-	
        // player died
 	if (self.owner.health <= 0)
-	BreakHook();
-
-	// target died
-	else if (self.enemy != world && self.enemy.solid == SOLID_NOT)
+	{
 		BreakHook();
+	}
+	// target died
+	else if (self.enemy != world && ((self.enemy.solid == SOLID_NOT) || (self.enemy.takedamage && self.enemy.health <=0)))
+	{
+		BreakHook();
+	}
 	
-    if (other == self.owner)
-        return;
+	if (other == self.owner)
+		return;
  
 
 
@@ -146,18 +148,10 @@ void() PullHook =
     
     if (other.takedamage && other.health)
     {
-    	       // player died
-	if (self.owner.health <= 0)
-	BreakHook();
-
-	// target died
-	else if (self.enemy != world && self.enemy.solid == SOLID_NOT)
-		BreakHook();
             self.think = hookdamage;
             self.enemy = other;
             self.solid = SOLID_NOT;
             self.nextthink = time;
-
     }
 
     sound (self.owner, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
